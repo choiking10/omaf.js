@@ -164,15 +164,15 @@ def make_dirs_if_not_exist(dir_path):
 
 
 def print_message(msg):
-    print "\n" + "#" * 80
-    print "### " + str(msg)
-    print "#" * 80 + "\n"
+    print("\n" + "#" * 80)
+    print("### " + str(msg))
+    print("#" * 80 + "\n")
 
 
 def execute_cmd(cmd_string):
     ret_code = subprocess.call(cmd_string, shell=True)
     if not ret_code == 0:
-        print "ERROR: something went wrong with: ", cmd_string
+        print("ERROR: something went wrong with: ", cmd_string)
         sys.exit(-1)
 
 
@@ -194,9 +194,9 @@ def execute_cmds(cmds_string, num_threads=8):
                 if p.returncode == 0:
                     processes.remove(p)
                     n += 1
-                    print "{} jobs finished. Still to finish: {}".format(n, count-n)
+                    print("{} jobs finished. Still to finish: {}".format(n, count-n))
                 else:
-                    print "ERROR: executing command: errorcode={}".format(p.returncode)
+                    print("ERROR: executing command: errorcode={}".format(p.returncode))
                     sys.exit(-1)
 
         if len(processes) == 0 and len(cmds_string) == 0:
@@ -265,7 +265,7 @@ def get_file_prefix(file_in):
 def get_step1_cmd(bin_dir, output_dir, file_in, width, height, frame_cnt, bit_depth, chroma_format):
     cmd = os.path.join(bin_dir, 'TApp360Convert')
     if not os.path.exists(cmd):
-        print "\"{}\" not found".format(cmd)
+        print("\"{}\" not found".format(cmd))
         return None
 
     cmd += " --InputFile={} --InputBitDepth={} --InputChromaFormat={} --SourceWidth={} --SourceHeight={}".format(
@@ -281,10 +281,10 @@ def get_step1_cmd(bin_dir, output_dir, file_in, width, height, frame_cnt, bit_de
 def get_step2_cmd(input_dir, output_dir):
     high_res_files = find_files_in_dir(input_dir, "highres")
     if len(high_res_files) == 0:
-        print "Error: no highres file found in {}".format(input_dir)
+        print("Error: no highres file found in {}".format(input_dir))
         return None
     elif len(high_res_files) > 1:
-        print "Warn: more than 1 highres files found in {}. select first: {}".format(input_dir, high_res_files[0])
+        print("Warn: more than 1 highres files found in {}. select first: {}".format(input_dir, high_res_files[0]))
 
     cmd = "ffmpeg -y -loglevel quiet -f rawvideo -pix_fmt yuv420p -s:v 4608x3072 -i {} -pix_fmt yuv420p" \
            " -s:v 2304x1536 {}".format(high_res_files[0], os.path.join(output_dir, "lowres_2304x1536.yuv"))
@@ -294,17 +294,17 @@ def get_step2_cmd(input_dir, output_dir):
 def get_step3_cmd(input_dir, output_dir, guardband_size, guardband_mode):
     high_res_files = find_files_in_dir(input_dir, "highres")
     if len(high_res_files) == 0:
-        print "Error: no highres file found in {}".format(input_dir)
+        print("Error: no highres file found in {}".format(input_dir))
         return None
     elif len(high_res_files) > 1:
-        print "Warn: more than 1 highres files found in {}. select first: {}".format(input_dir, high_res_files[0])
+        print("Warn: more than 1 highres files found in {}. select first: {}".format(input_dir, high_res_files[0]))
 
     low_res_files = find_files_in_dir(input_dir, "lowres")
     if len(low_res_files) == 0:
-        print "Error: no lowres file found in {}".format(input_dir)
+        print("Error: no lowres file found in {}".format(input_dir))
         return None
     elif len(low_res_files) > 1:
-        print "Warn: more than 1 lowres files found in {}. select first: {}".format(input_dir, low_res_files[0])
+        print("Warn: more than 1 lowres files found in {}. select first: {}".format(input_dir, low_res_files[0]))
 
     cmds = []
     for size in [768, 384]:
@@ -339,16 +339,16 @@ def get_step4_cmd(bin_dir, input_dir, output_dir, file_prefix, qps, fps, frame_c
     elif codec == 1:
         enc_bin = 'kvazaar'
     elif not os.path.exists(config_file):
-        print "HM config file \"{}\" not found".format(config_file)
+        print("HM config file \"{}\" not found".format(config_file))
         return None
     if not os.path.exists(enc_bin) and not codec == 1:
-        print "\"{}\" not found. HM binary missing? If you want to use HHI enc please contact HHI.".format(enc_bin)
+        print("\"{}\" not found. HM binary missing? If you want to use HHI enc please contact HHI.".format(enc_bin))
         return None
 
     if codec == 0 and len(qps) > 1:
         # HM needs to be updated to support multiple QPs
-        print "WARNING: Multiple QPs are not supported for now. HM Encoder needs to be updated for this. " \
-              "Continue now with QP={}".format(qps[0])
+        print("WARNING: Multiple QPs are not supported for now. HM Encoder needs to be updated for this. " \
+              "Continue now with QP={}".format(qps[0]))
         qps = [qps[0]]
 
     cmds = []
@@ -365,8 +365,8 @@ def get_step4_cmd(bin_dir, input_dir, output_dir, file_prefix, qps, fps, frame_c
                 input_file_frames = get_frame_cnt_yuv420(input_file, size, size)
 
                 if frame_cnt + 1 > input_file_frames:
-                    print "Error: provided frame count {}+1 is to big " \
-                        "for file {} with {} frames.".format(frame_cnt, input_file, input_file_frames)
+                    print("Error: provided frame count {}+1 is to big " \
+                        "for file {} with {} frames.".format(frame_cnt, input_file, input_file_frames))
                     return None
 
                 cmd = enc_bin
@@ -402,7 +402,7 @@ def get_step4_cmd(bin_dir, input_dir, output_dir, file_prefix, qps, fps, frame_c
 def get_step5_cmd(mode, bin_dir, input_dir, output_dir, qps, frame_cnt, fps, file_prefix, guardband_size):
     cmd = os.path.join(bin_dir, 'hevc2omaf')
     if not os.path.exists(cmd):
-        print "\"{}\" not found".format(cmd)
+        print("\"{}\" not found".format(cmd))
         return None
     cmd += " --mode {} --inputDir {} --outputDir {} --QP {} --duration {} --fps {} --inputFilePrefix {}" \
            " --guardbands {}".format(mode, input_dir, output_dir, ' '.join(str(q) for q in qps), frame_cnt, fps,
@@ -423,7 +423,7 @@ def filter_nalus(input_dir, qps, file_prefix):
                     buffer = f.read()
                     nalus = get_nal_units(buffer)
                     if len(nalus) < 1:
-                        print 'WARN: no nal units could be found in', input_path
+                        print('WARN: no nal units could be found in', input_path)
                         continue
                     filter_offsets = find_filtered_nalu_offsets(nalus)
                     write_file_from_offsets(output_path, buffer, filter_offsets)
@@ -462,7 +462,7 @@ def get_steps(steps_str):
 
 
 def main():
-    print "OMAF file creation script version {}\n".format(__version__)
+    print("OMAF file creation script version {}\n".format(__version__))
     # COMMAND LINE STUFF
     parser = argparse.ArgumentParser(formatter_class=argparse.RawTextHelpFormatter,
                                      description='Create OMAF viewport-dependent profile/ 3GPP Advance media  mp4 files and DASH MPD.\n\n'
@@ -511,29 +511,29 @@ def main():
     # check params
     steps = get_steps(args.steps)
     if not steps:
-        print "Error: provided steps are not valid"
+        print("Error: provided steps are not valid")
         return -1
     filename_prefix = args.FilePrefix
     if 1 in steps and not filename_prefix:
         filename_prefix = get_file_prefix(args.input)
     if not filename_prefix:
-        print "Error: please provide file prefix with option [-p|--FilePrefix] since it can not be guessed from filename"
+        print("Error: please provide file prefix with option [-p|--FilePrefix] since it can not be guessed from filename")
         return -1
     if args.codec == 0 and not args.HMconfig and 4 in steps:
-        print "Error: please provide the config file for HM using [-c|HMconfig] option"
+        print("Error: please provide the config file for HM using [-c|HMconfig] option")
         return -1
     if args.codec == 0 and len(args.QP) > 1 and 4 in steps:
         # HM needs to be updated to support multiple QPs
-        print "WARNING: Multiple QPs are not supported for now. HM Encoder needs to be updated for this. " \
-              "Continue now with QP={}".format(args.QP[0])
+        print("WARNING: Multiple QPs are not supported for now. HM Encoder needs to be updated for this. " \
+              "Continue now with QP={}".format(args.QP[0]))
         args.QP = [args.QP[0]]
     # complaint stream mode
     if args.mode == str("omafvd"):
-        print "Generating MPEG-OMAF viewport dependent complaint streams"
+        print("Generating MPEG-OMAF viewport dependent complaint streams")
     elif args.mode == str("avm"):
-        print "Generating 3GPP Advance Media Profile complaint streams "
+        print("Generating 3GPP Advance Media Profile complaint streams ")
     else:
-        print "Error: please provide a correct mode type"
+        print("Error: please provide a correct mode type")
 
 
     bin_dir = None
@@ -544,7 +544,7 @@ def main():
     elif sys.platform.startswith('win'):
         bin_dir = os.path.join(os.getcwd(), 'bin/win')
     if not bin_dir:
-        print "ERROR: your OS is not supported"
+        print("ERROR: your OS is not supported")
         return -1
 
     next_input = args.input
@@ -552,15 +552,15 @@ def main():
         if step == 1:
             yuv_dir = os.path.join(args.OutputDir, 'yuv', filename_prefix)
             make_dirs_if_not_exist(yuv_dir)
-            print "NOTE: The sequence you provided is now called \"{}\"" \
-                  " you will find all the output files in directory \"{}\"".format(filename_prefix, yuv_dir)
+            print("NOTE: The sequence you provided is now called \"{}\"" \
+                  " you will find all the output files in directory \"{}\"".format(filename_prefix, yuv_dir))
             print_message("Step 1: convert ERP yuv to high res CMP yuv")
             cmd = get_step1_cmd(bin_dir, yuv_dir, next_input, args.SourceWidth, args.SourceHeight,
                                 args.FramesToBeEncoded, args.InputBitDepth, args.InputChromaFormat)
             if not cmd:
-                print "Error: no command to execute in step 1"
+                print("Error: no command to execute in step 1")
                 return -1
-            print "command: {}".format(cmd)
+            print("command: {}".format(cmd))
             execute_cmd(cmd)
             next_input = yuv_dir
         elif step == 2:
@@ -571,9 +571,9 @@ def main():
                 make_dirs_if_not_exist(output_dir)
             cmd = get_step2_cmd(next_input, output_dir)
             if not cmd:
-                print "Error: no command to execute in step 2"
+                print("Error: no command to execute in step 2")
                 return -1
-            print "command: {}".format(cmd)
+            print("command: {}".format(cmd))
             execute_cmd(cmd)
             next_input = output_dir
         elif step == 3:
@@ -583,10 +583,10 @@ def main():
                 make_dirs_if_not_exist(output_dir)
             cmds = get_step3_cmd(next_input, output_dir, args.GuardBandSize, args.GuardBandMode)
             if not cmds:
-                print "Error: no commands to execute in step 4"
+                print("Error: no commands to execute in step 4")
                 return -1
             print_message("Step 3: (create tiles): run {} tile cropping jobs".format(len(cmds)))
-            print "First command: {}".format(cmds[0])
+            print("First command: {}".format(cmds[0]))
             execute_cmds(cmds)
             next_input = output_dir
         elif step == 4:
@@ -598,10 +598,10 @@ def main():
             cmds = get_step4_cmd(bin_dir, next_input, hevc_dir, filename_prefix, args.QP, args.FrameRate,
                                  args.FramesToBeEncoded, args.HMconfig, args.codec)
             if not cmds:
-                print "Error: no commands to execute in step 4"
+                print("Error: no commands to execute in step 4")
                 return -1
             print_message("Step 4: (encode): run {} encoding jobs".format(len(cmds)))
-            print "First command: {}".format(cmds[0])
+            print("First command: {}".format(cmds[0]))
             execute_cmds(cmds)
 
             # if not HM is used, filter NALs
@@ -615,7 +615,7 @@ def main():
             print_message("Step 5 (OMAF packaging)")
             cmd = get_step5_cmd(args.mode, bin_dir, next_input, omaf_dir, args.QP, args.FramesToBeEncoded, args.FrameRate,
                                 filename_prefix, args.GuardBandSize)
-            print "command: {}".format(cmd)
+            print("command: {}".format(cmd))
             execute_cmd(cmd)
     return 0
 
