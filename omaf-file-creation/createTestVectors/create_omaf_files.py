@@ -536,13 +536,14 @@ def main():
         print("Error: please provide a correct mode type")
 
 
+    my_dir = os.path.dirname(os.path.realpath(__file__))
     bin_dir = None
     if sys.platform.startswith('darwin'):
-        bin_dir = os.path.join(os.getcwd(), 'bin/osx')
+        bin_dir = os.path.join(my_dir, 'bin/osx')
     elif sys.platform.startswith('linux'):
-        bin_dir = os.path.join(os.getcwd(), 'bin/linux')
+        bin_dir = os.path.join(my_dir, 'bin/linux')
     elif sys.platform.startswith('win'):
-        bin_dir = os.path.join(os.getcwd(), 'bin/win')
+        bin_dir = os.path.join(my_dir, 'bin/win')
     if not bin_dir:
         print("ERROR: your OS is not supported")
         return -1
